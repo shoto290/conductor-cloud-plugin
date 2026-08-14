@@ -19,6 +19,7 @@ The repository root **is** the plugin — a single Cursor plugin, not a multi-pl
 | `mcp.json` | MCP server registration. The filename is fixed; Cursor will not find any other name |
 | `src/` | MCP server source (Node + TypeScript), compiled to `dist/` |
 | `skills/<name>/SKILL.md` | Skill definition (+ supporting files) |
+| `scripts/smoke.sh` | Startup check run by `npm run check` |
 | `assets/logo.svg` | Marketplace logo referenced by the manifest |
 | `package.json` | Scripts, deps, and the published entry point |
 | `README.md` | User-facing install and configuration |
@@ -106,15 +107,15 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 
 ## Checks
 
-One command must pass before a PR:
+One command must pass before a PR, and CI runs the same one:
 
 ```bash
-npm run build
+npm run check
 ```
 
-It type-checks and compiles `src/` to `dist/`. There is no test suite yet.
+It type-checks and compiles `src/` to `dist/`, then runs `scripts/smoke.sh`, which starts the built server and asserts it answers `tools/list`. The smoke step is not redundant with the build: dropping the `ListTools` handler still type-checks cleanly but breaks every client.
 
-Also verify by hand that the server still speaks MCP — the `## Verify` block in `README.md` sends `initialize` and `tools/list` over stdio and expects a tool list back.
+There is no unit test suite yet.
 
 ## Enforced Rules
 

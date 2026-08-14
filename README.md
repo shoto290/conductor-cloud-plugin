@@ -102,30 +102,13 @@ An editor launched from the Dock may not inherit your shell environment. If the 
 
 Both Cursor and Grok Bot pick it up. Individual members can't enable it for Grok Bot themselves; if the tools don't appear, ask an admin. Give bots a dedicated key — they work unattended, and every workspace and commit they create is attributed to that key's Conductor account.
 
-## What ships
-
-| Path | Component |
-| --- | --- |
-| `.cursor-plugin/plugin.json` | Plugin manifest — metadata, the `CONDUCTOR_API_KEY` variable, component paths |
-| `skills/conductor-cloud/SKILL.md` | Skill: when to hand a job to a cloud agent, and how to brief and supervise it |
-| `mcp.json` | Registers the `conductor-cloud` stdio MCP server |
-| `src/` | MCP server source (TypeScript) — no tools yet |
-
 ## Verify it works
 
 While the plugin is a scaffold, check that the server builds and speaks MCP:
 
 ```bash
-npm run build
-
-printf '%s\n' \
-  '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"probe","version":"0.0.0"}}}' \
-  '{"jsonrpc":"2.0","method":"notifications/initialized"}' \
-  '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}' \
-  | node dist/index.js
+npm run check
 ```
-
-Expect `{"result":{"tools":[]},...}` — an empty tool list is correct today.
 
 Once the tools land, ask the agent: *"List my Conductor projects."* It should come back with the repositories you can create workspaces in. To check the key on its own, without the agent:
 

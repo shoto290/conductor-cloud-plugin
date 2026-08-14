@@ -5,7 +5,7 @@ description: Hand a self-contained job to a Conductor Cloud agent running in its
 
 # Conductor Cloud
 
-> **Status: scaffold.** The `conductor-cloud` MCP server installs and starts, but it exposes **no tools yet**. Until it does, perform the flow below with `curl` against `https://api.conductor.build/v0` — see the [Conductor API docs](https://www.conductor.build/docs/api).
+> **Status: scaffold.** The `conductor-cloud` MCP server starts but exposes **no tools yet**, so this skill describes the shape of the handoff rather than a runnable procedure.
 
 ## The Gesture
 
@@ -21,11 +21,11 @@ Do not reach for it when the job needs the user's local machine, a non-GitHub re
 
 ## Flow
 
-1. **Pick the repository.** `GET /v0/projects`.
-2. **Create the workspace.** `POST /v0/workspaces` with an explicit `name`, `agent`, and `model`. The name becomes the git branch, so name it after the job. Returns `{ workspaceId, sessionId, deepLink }`.
-3. **Send the brief.** `POST /v0/sessions/{id}/messages`.
-4. **Supervise.** Poll `GET /v0/sessions/{id}/status` until you have seen `working`, and only then treat `idle` as done. Read the reply with `GET /v0/sessions/{id}/messages?after=<last message id>`.
-5. **Hand back the `deepLink`** so the user can open the workspace themselves.
+1. **Pick the repository** from the projects you can create workspaces in.
+2. **Create the workspace** with an explicit name, agent, and model. The name becomes the git branch, so name it after the job.
+3. **Send the brief.**
+4. **Supervise.** A queued prompt has not started a turn yet, and the session reports `idle` until it does — wait until you have seen `working` before treating `idle` as done, then read the reply from the transcript.
+5. **Hand back the deep link** so the user can open the workspace themselves.
 
 ## Writing The Brief
 

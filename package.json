@@ -5,6 +5,9 @@
   "license": "MIT",
   "type": "module",
   "main": "dist/index.js",
+  "bin": {
+    "conductor-cloud-plugin": "dist/index.js"
+  },
   "files": [
     "dist"
   ],
@@ -14,6 +17,7 @@
   },
   "scripts": {
     "build": "tsc",
+    "check": "npm run build && scripts/smoke.sh",
     "prepare": "npm run build"
   },
   "dependencies": {
@@ -24,6 +28,6 @@
     "typescript": "^5.9.3"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=18"
   }
 }
