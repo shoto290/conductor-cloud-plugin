@@ -97,6 +97,23 @@ To check that the server builds, speaks MCP, and calls the API correctly — no 
 npm run check
 ```
 
+### The real end-to-end check
+
+`npm run check` never leaves localhost. To prove the whole loop against the real API — the MCP handshake, `list_projects`, a workspace, a prompt, the polling, and the deep link — run it once by hand:
+
+```bash
+export CONDUCTOR_API_KEY=...
+npm run e2e -- --project <projectId> --agent claude --model opus-5-1m
+```
+
+> **This creates a real cloud workspace.** It bills against that key's plan and stays there until you delete it, along with the branch it opens. Point it at a repository you keep for testing, never a live one.
+
+Take the project id from `list_projects` — or run the command with a wrong one, which fails before creating anything and prints the ids the key can see. The workspace is named `plugin-e2e-<timestamp>-<random>` so it is obvious what it is, and the job it is sent is one harmless line: reply with a token, change nothing.
+
+It polls every 5 seconds and gives up after 10 minutes, then prints the `workspaceId`, the last transcript cursor, and the `conductor://` deep link — open it to see the session that just answered. The key is read from `CONDUCTOR_API_KEY` only and is scrubbed from everything the command prints.
+
+This is not part of `npm run check` and does not belong in CI: it costs money and leaves something behind every time it runs.
+
 To check the key on its own, without the agent:
 
 ```bash

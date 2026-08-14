@@ -21,8 +21,9 @@ The repository root **is** the plugin. There is no `plugins/` directory and no m
 | `dist/index.js` | Build output, gitignored. `prepare` rebuilds it at publish time; nothing reads the copy in a checkout |
 | `skills/<name>/SKILL.md` | Skill definition (+ supporting files) |
 | `test/*.test.js` | Contract tests (`node:test`) — drive `dist/index.js` over stdio against a fake API on localhost |
-| `test/helpers.js` | The rig those tests share: the fake API, and a client that speaks MCP to the built server |
+| `test/helpers.js` | The rig those tests share: the fake API, and a client that speaks MCP to the built server. `scripts/e2e.js` reuses it |
 | `scripts/smoke.sh` | Startup check run by `npm run check`. Handshakes the working tree *and* an unpacked `npm pack` tarball |
+| `scripts/e2e.js` | The opt-in `npm run e2e` — the whole loop against the real API. Needs a key, creates a real workspace, never runs in CI |
 | `scripts/bump-version.sh` | The only supported way to move the version — see [Releasing](#releasing) |
 | `assets/logo.svg` | Logo referenced by the manifest |
 | `package.json` | Scripts, deps, and the published entry point |
@@ -56,7 +57,15 @@ It type-checks, bundles `src/` into `dist/index.js`, runs the contract tests, th
 
 The contract tests (`npm test`) spawn the built server as a child process and speak real `initialize` / `tools/list` / `tools/call` to it, with `CONDUCTOR_TEST_API_BASE` pointing at a fake Conductor API on localhost. They cover the seven tool names and their required arguments, the headers each request carries, the missing-key and rejected-key failures, `userMessage` passthrough, connection failures and the timeout, the status merge, and the transcript's filtering, paging, and cursor. **No test needs a key or the network**, and one of them asserts the key never reaches stdout, stderr, or an error message — keep it that way.
 
-`CONDUCTOR_TEST_API_BASE` and `CONDUCTOR_TEST_TIMEOUT_MS` exist for that suite alone. They are not user settings: don't document them, don't add them to `mcp.json` or the manifest, and don't grow the list — a real option belongs in the manifest's `variables`.
+One check is deliberately outside that command, because it cannot be free:
+
+```bash
+npm run e2e -- --project <id> --agent <id> --model <id>   # needs CONDUCTOR_API_KEY
+```
+
+`scripts/e2e.js` drives the built server over MCP against `api.conductor.build` and walks the loop for real — `list_projects`, `create_workspace`, `send_prompt`, polling `get_session_status` and `get_transcript` until the reply carries a token it generated, then `get_workspace` for the deep link. It bounds itself (5-second polls, 10 minutes total), names the workspace `plugin-e2e-<timestamp>-<random>`, sends a job that changes nothing, and scrubs the key from every line it prints. **Never wire it into `npm run check` or CI**: each run bills a real plan and leaves a real workspace behind. Run it by hand against a test repository when the loop changes, and say in the PR that you did.
+
+`CONDUCTOR_TEST_API_BASE` and `CONDUCTOR_TEST_TIMEOUT_MS` exist for the checks alone — `scripts/e2e.js` passes the first one through so the E2E can be rehearsed against that same fake before it is trusted with a key and a bill. They are not user settings: don't document them, don't add them to `mcp.json` or the manifest, and don't grow the list — a real option belongs in the manifest's `variables`.
 
 `smoke.sh` runs a handshake twice — once against the working tree, once against an unpacked `npm pack` tarball with no `node_modules`, which is what `npx -y conductor-cloud-plugin` downloads and runs. The second run is what fails if `files`, `bin`, or the bundle's self-containment regresses; the first passes regardless, because `node_modules` is sitting right there.
 
