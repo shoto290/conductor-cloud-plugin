@@ -6,12 +6,17 @@ import { z } from "zod";
 
 const { version } = createRequire(import.meta.url)("../package.json");
 
-const API_BASE = "https://api.conductor.build/v0";
+// The two CONDUCTOR_TEST_ variables are the seam the contract tests drive the
+// server through: they point it at a local fake API and shorten the timeout so
+// the whole suite runs without a key and without the network. Neither is a
+// user setting — they are absent from the manifest, mcp.json, and the README.
+const API_BASE =
+  process.env.CONDUCTOR_TEST_API_BASE ?? "https://api.conductor.build/v0";
 // Conductor answers 403 to clients that do not identify themselves.
 const USER_AGENT = `conductor-cloud-plugin/${version}`;
 const API_KEYS_URL = "https://app.conductor.build/users/api-keys";
 // Without this, a hung connection stalls the agent for undici's 5-minute default.
-const TIMEOUT_MS = 15_000;
+const TIMEOUT_MS = Number(process.env.CONDUCTOR_TEST_TIMEOUT_MS) || 15_000;
 
 // The transcript endpoint pages five events at a time by default, and a single
 // turn is dozens of events — ask for a page worth reading, and stop walking
