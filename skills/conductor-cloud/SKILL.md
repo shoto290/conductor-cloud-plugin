@@ -22,7 +22,7 @@ Do not reach for it when the job needs the user's local machine, a non-GitHub re
 1. **Pick the repository** — `list_projects` returns what the key can create workspaces in. Match the user's repository to one of them and keep its `id`; do not guess an id the tool did not return.
 2. **Create the workspace** — `create_workspace`, with an explicit name, agent, and model. The name becomes the git branch, so name it after the job. Keep the `workspaceId` and `sessionId` it returns.
 3. **Send the brief** — `send_prompt`. A fresh workspace is still starting, so expect `state: "queued"`.
-4. **Supervise** — `get_session_status`, then `get_transcript`. A queued prompt has not started a turn yet, and the session reports `idle` until it does — wait until you have seen `working` before treating `idle` as done, then read the reply from the transcript. Pass the cursor `get_transcript` returns back as `after` so each poll costs one reply, not the whole session.
+4. **Supervise** — `get_session_status`, then `get_transcript`. A turn is done when the session reads `idle` **and** the transcript has new content after your `after` cursor; `idle` on its own can just mean the turn has not started yet. Seeing `working` confirms it started, but it is not required — a short turn can begin and finish between two polls, so never block waiting for `working` to show up. Pass the cursor `get_transcript` returns back as `after` so each poll costs one reply, not the whole session.
 5. **Hand back the deep link** — from `create_workspace`, or `get_workspace` later — so the user can open the workspace themselves.
 
 ## Writing The Brief

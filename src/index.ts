@@ -285,7 +285,7 @@ server.registerTool(
   {
     title: "Check a cloud session",
     description:
-      "Report whether a cloud session is working, along with the state of the workspace it runs in. A session reads 'idle' until its first turn actually starts, so 'idle' right after send_prompt means 'not started yet', not 'done' — wait until you have seen 'working' before treating 'idle' as finished, and expect a workspace that is still 'initializing' or has gone 'sleeping' after four idle hours.",
+      "Report whether a cloud session is working, along with the state of the workspace it runs in. A turn is done when this reports 'idle' and get_transcript returns new content after your cursor — 'idle' on its own is ambiguous, because a session also reads 'idle' before its first turn starts. Seeing 'working' confirms a turn began but is not required: a short turn can start and finish between two polls, so do not block waiting for it. Expect a workspace that is still 'initializing', or one that has gone 'sleeping' after four idle hours.",
     inputSchema: {
       sessionId: z.string().describe("Session id to check."),
     },
