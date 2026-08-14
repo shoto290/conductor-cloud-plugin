@@ -5,8 +5,6 @@ description: Hand a self-contained job to a Conductor Cloud agent running in its
 
 # Conductor Cloud
 
-> **Status: early.** Not every step below has a tool behind it yet. If a step names a tool you cannot see in your tool list, say so rather than improvising a substitute.
-
 ## The Gesture
 
 One move: **send a job to a cloud agent.** A cloud session is a separate agent in a separate sandbox — you are handing off work, not extending your own turn.
@@ -22,10 +20,10 @@ Do not reach for it when the job needs the user's local machine, a non-GitHub re
 ## Flow
 
 1. **Pick the repository** — `list_projects` returns what the key can create workspaces in. Match the user's repository to one of them and keep its `id`; do not guess an id the tool did not return.
-2. **Create the workspace** with an explicit name, agent, and model. The name becomes the git branch, so name it after the job.
-3. **Send the brief.**
-4. **Supervise.** A queued prompt has not started a turn yet, and the session reports `idle` until it does — wait until you have seen `working` before treating `idle` as done, then read the reply from the transcript.
-5. **Hand back the deep link** so the user can open the workspace themselves.
+2. **Create the workspace** — `create_workspace`, with an explicit name, agent, and model. The name becomes the git branch, so name it after the job. Keep the `workspaceId` and `sessionId` it returns.
+3. **Send the brief** — `send_prompt`. A fresh workspace is still starting, so expect `state: "queued"`.
+4. **Supervise** — `get_session_status`, then `get_transcript`. A queued prompt has not started a turn yet, and the session reports `idle` until it does — wait until you have seen `working` before treating `idle` as done, then read the reply from the transcript. Pass the cursor `get_transcript` returns back as `after` so each poll costs one reply, not the whole session.
+5. **Hand back the deep link** — from `create_workspace`, or `get_workspace` later — so the user can open the workspace themselves.
 
 ## Writing The Brief
 
@@ -37,5 +35,5 @@ Every brief states: the files or area to touch, the approach and any constraint,
 
 - **One key, from the environment.** `CONDUCTOR_API_KEY`. Never accept it as a tool argument, never log it, never echo it into a session message.
 - **Never put a secret in a prompt.** Cloud chat is stored on Conductor's servers and readable by the whole organization.
-- **Confirm before destroying someone else's work** — `archive` and `cancel` stop in-flight turns.
-- **Do not assume a workspace is still awake.** Sandboxes sleep after 4 hours idle and stop at 23h50m regardless. Check the status; expect `sleeping`.
+- **Confirm before destroying someone else's work** — `cancel_session` stops an in-flight turn and drops whatever is queued behind it.
+- **Do not assume a workspace is still awake.** Sandboxes sleep after 4 hours idle and stop at 23h50m regardless. `get_session_status` reports the workspace alongside the session; expect `sleeping`.
