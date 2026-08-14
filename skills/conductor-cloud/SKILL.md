@@ -5,7 +5,7 @@ description: Hand a self-contained job to a Conductor Cloud agent running in its
 
 # Conductor Cloud
 
-> **Status: scaffold.** The `conductor-cloud` MCP server installs and starts, but it exposes **no tools yet**. Until it does, perform the flow below with `curl` exactly as written in [CLOUD.md](../../CLOUD.md).
+> **Status: scaffold.** The `conductor-cloud` MCP server installs and starts, but it exposes **no tools yet**. Until it does, perform the flow below with `curl` against `https://api.conductor.build/v0` — see the [Conductor API docs](https://www.conductor.build/docs/api).
 
 ## The Gesture
 

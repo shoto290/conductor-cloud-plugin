@@ -6,7 +6,7 @@ import { ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 // Scaffold only: the server starts and advertises an empty tool list. Nothing
 // here calls the Conductor API yet. When the first tool lands, read the
 // credential from process.env.CONDUCTOR_API_KEY — never from a tool argument,
-// and never log it. See CLOUD.md for the API contract.
+// and never log it. API contract: https://www.conductor.build/docs/api
 const server = new Server(
   { name: "conductor-cloud", version: "0.1.0" },
   { capabilities: { tools: {} } },

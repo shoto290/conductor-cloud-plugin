@@ -7,7 +7,7 @@ This repo is **conductor-cloud-plugin**: a plugin that gives a coding agent (Cur
 - an **MCP server** that exposes the Conductor API (`https://api.conductor.build/v0`) as tools, and
 - a **skill** that teaches the agent when to reach for those tools and how to supervise the sessions it starts.
 
-The platform contract — endpoints, auth, sandbox limits, privacy — lives in [CLOUD.md](CLOUD.md). Read it before writing anything that calls Conductor. This file governs how you work; CLOUD.md governs what you're working against.
+The platform contract — endpoints, auth, sandbox limits, privacy — lives in the [Conductor API docs](https://www.conductor.build/docs/api) and [Cloud docs](https://www.conductor.build/docs/cloud), with `https://api.conductor.build/v0/openapi.json` as the authoritative spec. Read them before writing anything that calls Conductor. This file governs how you work; those govern what you're working against.
 
 ## Layout
 
@@ -22,7 +22,6 @@ The repository root **is** the plugin — a single Cursor plugin, not a multi-pl
 | `assets/logo.svg` | Marketplace logo referenced by the manifest |
 | `package.json` | Scripts, deps, and the published entry point |
 | `README.md` | User-facing install and configuration |
-| `CLOUD.md` | Conductor Cloud + API reference for agents |
 
 Keep this table in sync as you add paths.
 
