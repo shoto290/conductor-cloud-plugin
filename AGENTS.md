@@ -18,7 +18,8 @@ The repository root **is** the plugin — a single Cursor plugin. It also carrie
 | `.cursor-plugin/plugin.json` | Plugin manifest — metadata, the `CONDUCTOR_API_KEY` variable, component paths |
 | `.cursor-plugin/marketplace.json` | One-entry marketplace so **+ Add** installs this folder. Its `source` is `.` |
 | `mcp.json` | MCP server registration. The filename is fixed; Cursor will not find any other name |
-| `src/` | MCP server source (Node + TypeScript), compiled to `dist/` |
+| `src/` | MCP server source (Node + TypeScript), bundled to `dist/index.js` |
+| `dist/index.js` | Committed build output. Cursor installs by cloning and never builds, so this is tracked — rebuild and commit it whenever `src/` changes |
 | `skills/<name>/SKILL.md` | Skill definition (+ supporting files) |
 | `scripts/start.sh` | Launcher `mcp.json` invokes. Finds a Node the GUI's PATH doesn't expose |
 | `scripts/smoke.sh` | Startup check run by `npm run check` |
@@ -115,7 +116,9 @@ One command must pass before a PR, and CI runs the same one:
 npm run check
 ```
 
-It type-checks and compiles `src/` to `dist/`, then runs `scripts/smoke.sh`, which starts the built server and asserts it answers `tools/list`. The smoke step is not redundant with the build: dropping the `ListTools` handler still type-checks cleanly but breaks every client.
+It type-checks, bundles `src/` into `dist/index.js`, then runs `scripts/smoke.sh`, which starts the built server and asserts it answers `tools/list`. The smoke step is not redundant with the build: dropping the `ListTools` handler still type-checks cleanly but breaks every client.
+
+`smoke.sh` runs that handshake twice — once against the working tree, once against a copy with `node_modules` stripped, which is how Cursor actually installs this plugin. The second run is what fails if `dist/index.js` stops being self-contained. The build is deterministic, so `npm run check` leaves the tree clean unless `src/` actually changed. When it does change, `dist/index.js` shows up dirty — commit it alongside the source rather than reverting it.
 
 There is no unit test suite yet.
 

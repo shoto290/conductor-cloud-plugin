@@ -7,7 +7,11 @@ pnpm-debug.log*
 .npm/
 .yarn/
 .pnp.*
-dist/
+# dist/index.js is committed on purpose: Cursor installs this plugin by cloning
+# the repo, and never runs npm install. A tracked, dependency-free bundle is
+# what lets the server start from Customize with nothing but an API key set.
+dist/*
+!dist/index.js
 build/
 coverage/
 *.tsbuildinfo

@@ -16,7 +16,8 @@
     "url": "git+https://github.com/shoto290/conductor-cloud-plugin.git"
   },
   "scripts": {
-    "build": "tsc",
+    "typecheck": "tsc",
+    "build": "npm run typecheck && esbuild src/index.ts --bundle --platform=node --format=esm --target=node18 --outfile=dist/index.js",
     "check": "npm run build && scripts/smoke.sh",
     "prepare": "npm run build"
   },
@@ -26,6 +27,7 @@
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
+    "esbuild": "^0.28.2",
     "typescript": "^5.9.3"
   },
   "engines": {

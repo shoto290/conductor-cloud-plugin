@@ -64,8 +64,12 @@ if [ -z "$node_bin" ]; then
   exit 1
 fi
 
+# dist/index.js is tracked, so a clone always has it and no install step is
+# needed. Missing means the checkout is partial, not that a build is pending —
+# hence "reinstall" rather than a terminal command the plugin UI cannot run.
 if [ ! -f dist/index.js ]; then
-  printf '%s\n' "conductor-cloud: dist/index.js is missing. Run 'npm install' in $(pwd), then restart Cursor." >&2
+  printf '%s\n' "conductor-cloud: dist/index.js is missing from $(pwd)." >&2
+  printf '%s\n' 'Fix: remove and reinstall the plugin to restore the checkout.' >&2
   exit 1
 fi
 
