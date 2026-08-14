@@ -1,6 +1,6 @@
 {
   "name": "conductor-cloud-plugin",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "MCP server for the conductor-cloud plugin — hand a job to a Conductor Cloud agent.",
   "license": "MIT",
   "type": "module",
@@ -18,7 +18,8 @@
   "scripts": {
     "typecheck": "tsc",
     "build": "npm run typecheck && esbuild src/index.ts --bundle --platform=node --format=esm --target=node18 --outfile=dist/index.js",
-    "check": "npm run build && scripts/smoke.sh",
+    "test": "node --test test/*.test.js",
+    "check": "npm run build && npm test && scripts/smoke.sh",
     "prepare": "npm run build"
   },
   "dependencies": {

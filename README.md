@@ -91,7 +91,7 @@ Ask the agent: *"List my Conductor projects."* It should come back with the repo
 
 Then try the whole loop: *"Run this in the cloud on <repo>."* The agent should create a named workspace, send it a brief, poll until the session replies, and hand you back a `conductor://` link that opens the workspace on your Mac.
 
-To check that the server builds and speaks MCP, without a key:
+To check that the server builds, speaks MCP, and calls the API correctly — no key, no network:
 
 ```bash
 npm run check
