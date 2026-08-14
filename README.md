@@ -7,7 +7,7 @@ Conductor runs each agent in its own Linux sandbox with your repositories pre-in
 ## What you get
 
 - **MCP tools** over `https://api.conductor.build/v0` — `list_projects`, `create_workspace` on a named branch, `continue_session`, `get_session_status`, `get_transcript`, `get_workspace` for the deep link, and `cancel_session` to stop a turn.
-- **A skill** that teaches the agent the parts that are easy to get wrong: a cloud session shares no context with your chat, so it needs a self-contained brief, and it reports `idle` until a queued turn actually starts.
+- **Six skills** — `list-projects`, `create-task`, `send-prompt`, `get-status`, `watch-task`, and `cancel-task` — that teach the agent when to reach for each tool and how to supervise the sessions it starts.
 - **One setting to fill in.** No OAuth dance, no per-repo config.
 
 ## Requirements

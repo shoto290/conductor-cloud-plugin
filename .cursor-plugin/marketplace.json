@@ -5,7 +5,7 @@
   },
   "metadata": {
     "description": "Conductor Cloud for Cursor and Grok Bot — hand a job to a cloud agent without leaving your editor.",
-    "version": "0.1.7"
+    "version": "0.1.8"
   },
   "plugins": [
     {
