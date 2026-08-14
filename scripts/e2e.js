@@ -2,7 +2,7 @@
 // The one check that needs a real key. Everything in `npm run check` runs
 // against a fake API on localhost; this drives the same built server over MCP
 // against api.conductor.build and walks the whole delegation loop —
-// initialize, list_projects, create_workspace, send_prompt, poll
+// initialize, list_projects, create_workspace, continue_session, poll
 // get_session_status and get_transcript, then get_workspace.
 //
 //   CONDUCTOR_API_KEY=... npm run e2e -- --project <id> --agent <id> --model <id>
@@ -189,9 +189,9 @@ async function run() {
     ].join("\n");
 
     const sent = JSON.parse(
-      await call(client, "send_prompt", { sessionId: created.sessionId, message }),
+      await call(client, "continue_session", { sessionId: created.sessionId, message }),
     );
-    step("send_prompt", `state ${sent.state ?? "sent"}, expecting "E2E-OK ${token}"`);
+    step("continue_session", `state ${sent.state ?? "sent"}, expecting "E2E-OK ${token}"`);
 
     // Poll the way the skill tells an agent to: status for the sandbox's
     // progress, transcript from the cursor for what has actually been said.

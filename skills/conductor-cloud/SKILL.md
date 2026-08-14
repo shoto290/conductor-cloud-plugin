@@ -21,7 +21,7 @@ Do not reach for it when the job needs the user's local machine, a non-GitHub re
 
 1. **Pick the repository** — `list_projects` returns what the key can create workspaces in. Match the user's repository to one of them and keep its `id`; do not guess an id the tool did not return.
 2. **Create the workspace** — `create_workspace`, with an explicit name, agent, and model. The name becomes the git branch, so name it after the job. Keep the `workspaceId` and `sessionId` it returns.
-3. **Send the brief** — `send_prompt`. A fresh workspace is still starting, so expect `state: "queued"`.
+3. **Send the brief** — `continue_session`. A fresh workspace is still starting, so expect `state: "queued"`.
 4. **Supervise** — `get_session_status`, then `get_transcript`. A turn is done when the session reads `idle` **and** the transcript has new content after your `after` cursor; `idle` on its own can just mean the turn has not started yet. Seeing `working` confirms it started, but it is not required — a short turn can begin and finish between two polls, so never block waiting for `working` to show up. Pass the cursor `get_transcript` returns back as `after` so each poll costs one reply, not the whole session.
 5. **Hand back the deep link** — from `create_workspace`, or `get_workspace` later — so the user can open the workspace themselves.
 
@@ -34,6 +34,6 @@ Every brief states: the files or area to touch, the approach and any constraint,
 ## Rules
 
 - **One key, from the environment.** `CONDUCTOR_API_KEY`. Never accept it as a tool argument, never log it, never echo it into a session message.
-- **Never put a secret in a prompt.** Cloud chat is stored on Conductor's servers and readable by the whole organization.
+- **Never put a secret in a brief.**
 - **Confirm before destroying someone else's work** — `cancel_session` stops an in-flight turn and drops whatever is queued behind it.
 - **Do not assume a workspace is still awake.** Sandboxes sleep after 4 hours idle and stop at 23h50m regardless. `get_session_status` reports the workspace alongside the session; expect `sleeping`.
