@@ -7,11 +7,10 @@ pnpm-debug.log*
 .npm/
 .yarn/
 .pnp.*
-# dist/index.js is committed on purpose: Cursor installs this plugin by cloning
-# the repo, and never runs npm install. A tracked, dependency-free bundle is
-# what lets the server start from Customize with nothing but an API key set.
-dist/*
-!dist/index.js
+# dist/ is build output again. mcp.json now starts the server with `npx -y
+# conductor-cloud-plugin`, so the checkout is never what runs — the npm tarball
+# is, and `prepare` builds it at publish time.
+dist/
 build/
 coverage/
 *.tsbuildinfo

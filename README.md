@@ -16,14 +16,13 @@ Conductor runs each agent in its own Linux sandbox with your repositories pre-in
 
 - A Conductor account on **Pro, Teams, or Enterprise** — cloud workspaces are not on the free plan.
 - Your repository connected to Conductor Cloud. **GitHub only**; GitLab and Bitbucket repos need local workspaces.
-- **Node.js 18 or newer.** Installed as a plugin, it doesn't have to be on any particular PATH — the launcher locates it at startup, version manager or not. The manual MCP config at the end has no launcher and does need `node` on the PATH your editor was started with.
+- **Node.js 18 or newer**, with `npx` available. The server is fetched and started by `npx -y conductor-cloud-plugin`, so nothing is built or vendored locally.
 
 ## Settings
 
 | Name | Description |
 | --- | --- |
 | `CONDUCTOR_API_KEY` | Bearer token for the Conductor API. Required. |
-| `CONDUCTOR_NODE` | Path to a Node.js 18+ binary. Optional, and only if the launcher reports it found none. |
 
 Create a key at **[app.conductor.build/users/api-keys](https://app.conductor.build/users/api-keys)**.
 
@@ -33,7 +32,7 @@ The key is a live credential for your repositories and compute. Never commit it,
 
 ## Install
 
-> **Status:** not published yet. There is no marketplace listing and no `conductor-cloud-plugin` package on npm, so the steps below describe the install path for the first release rather than something you can run today.
+> **Status:** there is no marketplace listing yet, so the first section below describes the first release rather than something you can do today. Every path here runs the server the same way — `npx -y conductor-cloud-plugin` — so all of them need the [npm package](https://www.npmjs.com/package/conductor-cloud-plugin) published.
 
 ### Cursor — from the marketplace
 
@@ -60,7 +59,9 @@ The path that works today, and it needs no team. Clone the repo:
 git clone https://github.com/shoto290/conductor-cloud-plugin.git
 ```
 
-Then in Cursor go to **Customize → Plugins → + Add** and select the cloned folder. **Conductor Cloud** appears under **Installed**; set `CONDUCTOR_API_KEY` there and the server starts. No install or build step — `dist/index.js` is committed with its dependencies bundled in, so a clone is already runnable.
+Then in Cursor go to **Customize → Plugins → + Add** and select the cloned folder. **Conductor Cloud** appears under **Installed**; set `CONDUCTOR_API_KEY` there and the server starts. No install or build step in the clone — `mcp.json` runs `npx -y conductor-cloud-plugin`, so npm fetches the server and the clone only supplies the manifest and the skill.
+
+That also means editing `src/` in the clone changes nothing you can see in Cursor. To try a local build, point a project-level `.cursor/mcp.json` at `node /absolute/path/to/dist/index.js` and run `npm run build` first.
 
 `+ Add` reads `.cursor-plugin/marketplace.json`, which declares this repository root as a one-plugin marketplace — the root *is* the plugin, so its `source` is `.`.
 
@@ -88,7 +89,7 @@ Gets you the tools without the skill. Add to `~/.cursor/mcp.json` (global) or `.
 export CONDUCTOR_API_KEY=...
 ```
 
-This path depends on the environment Cursor was launched with: an editor started from the Dock inherits a minimal one, so `${env:CONDUCTOR_API_KEY}` can come back empty and `npx` may not resolve. The plugin install above has neither problem — it takes the key as a plugin variable and finds Node itself.
+The server command is identical to the one the plugin uses; only the key differs. `${env:CONDUCTOR_API_KEY}` reads it from the environment your editor was launched with, which for an editor started from the Dock is a minimal one — so this can come back empty where the plugin install, which passes the key as a plugin variable, would not.
 
 ### Grok Bot
 
@@ -122,9 +123,15 @@ curl https://api.conductor.build/me \
 
 `401` means the key is wrong or expired. `403` usually means a rejected client signature — send a `User-Agent`. Errors carry a human-readable `userMessage`; read it.
 
-If the server fails to start, Cursor's MCP log carries the reason and the fix — the launcher writes both to stderr before exiting.
+If the server fails to start, Cursor's MCP log carries the reason. A line reading `spawn node ENOENT` or naming `scripts/start.sh` means Cursor is still holding a pre-0.1.2 copy of the plugin, one whose `mcp.json` spawned a shell script instead of `npx`. Remove the plugin, re-add the folder, and restart Cursor.
 
-One exception, because it fails before the launcher runs: a log line reading `spawn node ENOENT` means Cursor is still holding an older copy of the plugin, one whose `mcp.json` ran `node` directly and so depended on the GUI's `PATH`. The current `mcp.json` spawns `/bin/sh` instead, so the message can no longer come from this version. Remove the plugin, re-add the folder, and restart Cursor to pick up the launcher.
+To reproduce whatever the log shows, outside Cursor:
+
+```bash
+CONDUCTOR_API_KEY=... npx -y conductor-cloud-plugin
+```
+
+It should sit and wait on stdin. Anything else — a resolution failure, an npm error, a stack trace — is the same thing Cursor hit.
 
 ## Good to know
 
