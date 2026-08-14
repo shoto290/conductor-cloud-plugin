@@ -2,7 +2,7 @@
 
 Give your coding agent control of [Conductor Cloud](https://www.conductor.build/docs/cloud). The plugin connects Cursor and Grok Bot to the Conductor API, then adds a skill so the agent knows when to spin up a cloud workspace, how to brief it, and how to supervise it until it's done.
 
-> **Status: scaffold.** The plugin installs and its MCP server starts, but it exposes **no tools yet** and makes no network calls. Everything below describes the shape of the first release; the local development install is the only path that works today.
+> **Status: early.** The plugin ships **one tool, `list_projects`** — enough to confirm your key works and see the repositories you can delegate into. Creating workspaces and prompting them is not built yet. The local development install is the only path that works today.
 
 Conductor runs each agent in its own Linux sandbox with your repositories pre-installed. Work keeps going after you disconnect, and your team can open the same workspace and pick up the same chat.
 
@@ -104,13 +104,15 @@ Both Cursor and Grok Bot pick it up. Individual members can't enable it for Grok
 
 ## Verify it works
 
-While the plugin is a scaffold, check that the server builds and speaks MCP:
+Ask the agent: *"List my Conductor projects."* It should come back with the repositories you can create workspaces in. If the key is missing or rejected, the tool says so and tells you what to fix.
+
+To check that the server builds and speaks MCP, without a key:
 
 ```bash
 npm run check
 ```
 
-Once the tools land, ask the agent: *"List my Conductor projects."* It should come back with the repositories you can create workspaces in. To check the key on its own, without the agent:
+To check the key on its own, without the agent:
 
 ```bash
 curl https://api.conductor.build/me \

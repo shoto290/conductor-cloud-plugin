@@ -5,7 +5,7 @@ description: Hand a self-contained job to a Conductor Cloud agent running in its
 
 # Conductor Cloud
 
-> **Status: scaffold.** The `conductor-cloud` MCP server starts but exposes **no tools yet**, so this skill describes the shape of the handoff rather than a runnable procedure.
+> **Status: early.** Not every step below has a tool behind it yet. If a step names a tool you cannot see in your tool list, say so rather than improvising a substitute.
 
 ## The Gesture
 
@@ -21,7 +21,7 @@ Do not reach for it when the job needs the user's local machine, a non-GitHub re
 
 ## Flow
 
-1. **Pick the repository** from the projects you can create workspaces in.
+1. **Pick the repository** — `list_projects` returns what the key can create workspaces in. Match the user's repository to one of them and keep its `id`; do not guess an id the tool did not return.
 2. **Create the workspace** with an explicit name, agent, and model. The name becomes the git branch, so name it after the job.
 3. **Send the brief.**
 4. **Supervise.** A queued prompt has not started a turn yet, and the session reports `idle` until it does — wait until you have seen `working` before treating `idle` as done, then read the reply from the transcript.
