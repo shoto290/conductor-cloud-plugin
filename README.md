@@ -53,18 +53,17 @@ Use this if you'd rather install from source than wait for the listing. Requires
 
 ### Cursor — local development
 
-The path that works today. The repository root *is* the plugin, so symlink it into Cursor's local plugin directory:
+The path that works today, and it needs no team. Clone the repo, then point Cursor at the folder:
 
 ```bash
 git clone https://github.com/shoto290/conductor-cloud-plugin.git
 cd conductor-cloud-plugin
 npm install   # also builds dist/ via the prepare script
-
-mkdir -p ~/.cursor/plugins/local
-ln -s "$PWD" ~/.cursor/plugins/local/conductor-cloud
 ```
 
-Then run **Developer: Reload Window** in Cursor. `npm install` is required — the server runs from `dist/`, which is not committed.
+Then in Cursor go to **Customize → Plugins → + Add** and select the cloned folder. **Conductor Cloud** appears under **Installed**; set `CONDUCTOR_API_KEY` there.
+
+`+ Add` reads `.cursor-plugin/marketplace.json`, which declares this repository root as a one-plugin marketplace — the root *is* the plugin, so its `source` is `.`. `npm install` is required either way: the server runs from `dist/`, which is not committed.
 
 ### Any MCP client — manual config
 

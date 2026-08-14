@@ -1,0 +1,17 @@
+{
+  "name": "conductor-cloud-plugin",
+  "owner": {
+    "name": "Shoto"
+  },
+  "metadata": {
+    "description": "Conductor Cloud for Cursor and Grok Bot — hand a job to a cloud agent without leaving your editor.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "conductor-cloud",
+      "source": ".",
+      "description": "Create a Conductor Cloud workspace, brief it, and supervise it from your editor."
+    }
+  ]
+}
