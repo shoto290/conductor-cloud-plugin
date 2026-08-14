@@ -167,7 +167,7 @@ function spokenText(message: TranscriptMessage): string | null {
 // walking past the older ones, but it does not mean holding on to them.
 //
 // The cursor returned is an event id, which is what the API's `after` accepts
-// — not the message id send_prompt hands back.
+// — not the message id continue_session hands back.
 async function readTranscript(sessionId: string, after?: string) {
   const turns: string[] = [];
   let total = 0;
@@ -228,7 +228,7 @@ server.registerTool(
   {
     title: "Create a Conductor Cloud workspace",
     description:
-      "Create a cloud workspace — a sandbox on its own git branch — and its first session, then return the workspaceId, sessionId, and a deep link that opens it in the Conductor desktop app. The workspace starts with the repository and nothing else, so follow this with send_prompt to hand over the brief.\n\n" +
+      "Create a cloud workspace — a sandbox on its own git branch — and its first session, then return the workspaceId, sessionId, and a deep link that opens it in the Conductor desktop app. The workspace starts with the repository and nothing else, so follow this with continue_session to hand over the brief.\n\n" +
       `Model ids by agent — ${MODELS}. Effort by agent — claude: low, medium, high, xhigh, max; codex: none, low, medium, high, xhigh, max, ultra, where max needs a GPT-5.6 model and ultra needs Sol or Terra. Omit effort for the agent's default of high.`,
     inputSchema: {
       projectId: z
@@ -267,11 +267,11 @@ server.registerTool(
 );
 
 server.registerTool(
-  "send_prompt",
+  "continue_session",
   {
-    title: "Send a prompt to a cloud session",
+    title: "Continue a cloud session",
     description:
-      "Send a message to a cloud session — the opening brief, or a follow-up once it has replied. The session shares no context with this conversation: it has the repository and nothing else, so the brief must name the files or area to touch, the approach and any constraint, and the definition of done. Never put a secret in a prompt; cloud chat is stored on Conductor's servers and readable by the whole organization. The reply's state is 'sent', or 'queued' while the workspace is still starting — a queued message has not begun a turn yet.",
+      "Hand a brief to an existing cloud session — the opening brief for a fresh workspace, or a follow-up once the session has replied. The session shares no context with this conversation: it has the repository and nothing else, so the brief must name the files or area to touch, the approach and any constraint, and the definition of done. Never put a secret in a brief. The reply's state is 'sent', or 'queued' while the workspace is still starting — a queued message has not begun a turn yet.",
     inputSchema: {
       sessionId: z.string().describe("Session id from create_workspace."),
       message: z

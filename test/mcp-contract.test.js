@@ -14,7 +14,7 @@ const TOOLS = {
     required: ["projectId", "name", "agent", "model"],
     optional: ["effort", "branch"],
   },
-  send_prompt: { required: ["sessionId", "message"], optional: [] },
+  continue_session: { required: ["sessionId", "message"], optional: [] },
   get_session_status: { required: ["sessionId"], optional: [] },
   get_transcript: { required: ["sessionId"], optional: ["after"] },
   get_workspace: { required: ["workspaceId"], optional: [] },
@@ -88,7 +88,7 @@ test("cancel_session is annotated destructive, and the read-only tools are not",
     assert.notEqual(byName[name].annotations.destructiveHint, true);
   }
 
-  for (const name of ["create_workspace", "send_prompt"]) {
+  for (const name of ["create_workspace", "continue_session"]) {
     assert.notEqual(byName[name].annotations?.readOnlyHint, true, `${name} writes`);
   }
 });
@@ -133,7 +133,7 @@ test("every tool refuses to run without a key, rather than half of them", async 
       agent: "claude",
       model: "opus",
     },
-    send_prompt: { sessionId: "s1", message: "go" },
+    continue_session: { sessionId: "s1", message: "go" },
     get_session_status: { sessionId: "s1" },
     get_transcript: { sessionId: "s1" },
     get_workspace: { workspaceId: "w1" },

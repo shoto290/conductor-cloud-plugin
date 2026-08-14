@@ -35,7 +35,7 @@ Keep this table in sync as you add paths.
 
 ## Scope
 
-**The MCP server exposes seven tools, covering one loop end to end: `list_projects` → `create_workspace` → `send_prompt` → `get_session_status` → `get_transcript` → `get_workspace`, plus `cancel_session` to stop a turn.** That set is the MVP and is frozen. Renaming, archiving, sleeping, and the PR endpoints are later layers — don't add one without being asked.
+**The MCP server exposes seven tools, covering one loop end to end: `list_projects` → `create_workspace` → `continue_session` → `get_session_status` → `get_transcript` → `get_workspace`, plus `cancel_session` to stop a turn.** That set is the MVP and is frozen. Renaming, archiving, sleeping, and the PR endpoints are later layers — don't add one without being asked.
 
 ## House Rules
 
@@ -67,7 +67,7 @@ One check is deliberately outside that command, because it cannot be free:
 npm run e2e -- --project <id> --agent <id> --model <id>   # needs CONDUCTOR_API_KEY
 ```
 
-`scripts/e2e.js` drives the built server over MCP against `api.conductor.build` and walks the loop for real — `list_projects`, `create_workspace`, `send_prompt`, polling `get_session_status` and `get_transcript` until the reply carries a token it generated, then `get_workspace` for the deep link. It bounds itself (5-second polls, 10 minutes total), names the workspace `plugin-e2e-<timestamp>-<random>`, sends a job that changes nothing, and scrubs the key from every line it prints. **Never wire it into `npm run check` or CI**: each run bills a real plan and leaves a real workspace behind. Run it by hand against a test repository when the loop changes, and say in the PR that you did.
+`scripts/e2e.js` drives the built server over MCP against `api.conductor.build` and walks the loop for real — `list_projects`, `create_workspace`, `continue_session`, polling `get_session_status` and `get_transcript` until the reply carries a token it generated, then `get_workspace` for the deep link. It bounds itself (5-second polls, 10 minutes total), names the workspace `plugin-e2e-<timestamp>-<random>`, sends a job that changes nothing, and scrubs the key from every line it prints. **Never wire it into `npm run check` or CI**: each run bills a real plan and leaves a real workspace behind. Run it by hand against a test repository when the loop changes, and say in the PR that you did.
 
 `CONDUCTOR_TEST_API_BASE` and `CONDUCTOR_TEST_TIMEOUT_MS` exist for the checks alone — `scripts/e2e.js` passes the first one through so the E2E can be rehearsed against that same fake before it is trusted with a key and a bill. They are not user settings: don't document them, don't add them to `mcp.json` or the manifest, and don't grow the list — a real option belongs in the manifest's `variables`.
 

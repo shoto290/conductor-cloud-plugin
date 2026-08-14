@@ -33,7 +33,7 @@ test("requests authenticate with the key and identify the client", async (t) => 
 test("a POST sends JSON, and a POST with no body sends no content type", async (t) => {
   const { client, api } = await connect(t, { handle: () => ({ body: { ok: true } }) });
 
-  await client.callTool("send_prompt", { sessionId: "s1", message: "ship it" });
+  await client.callTool("continue_session", { sessionId: "s1", message: "ship it" });
   await client.callTool("cancel_session", { sessionId: "s1" });
 
   const [prompt, cancel] = api.requests;
