@@ -243,7 +243,8 @@ async function run() {
     say(`  workspaceId  ${created.workspaceId}`);
     say(`  sessionId    ${created.sessionId}`);
     say(`  cursor       ${cursor ?? "(none)"}`);
-    say(`  deep link    ${workspace.url ?? created.url ?? "(none)"}`);
+    // deepLink, not url: both create_workspace and get_workspace name it that.
+    say(`  deep link    ${workspace.deepLink ?? created.deepLink}`);
     say();
     say("That workspace is real and still there. Open the link to check it, then delete it.");
   } finally {
@@ -258,7 +259,7 @@ try {
   say(`E2E failed — ${error.message}`);
   if (created) {
     say(`  workspaceId  ${created.workspaceId}`);
-    if (created.url) say(`  deep link    ${created.url}`);
+    if (created.deepLink) say(`  deep link    ${created.deepLink}`);
     say("  it was created before the failure — open it, then delete it.");
   }
   process.exit(1);
