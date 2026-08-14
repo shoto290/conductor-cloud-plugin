@@ -75,7 +75,7 @@ npm run e2e -- --project <id> --agent <id> --model <id>   # needs CONDUCTOR_API_
 
 ## Releasing
 
-`mcp.json` starts the server with `npx -y conductor-cloud-plugin`, so **the published npm package is what users run** — not the checkout Cursor installed. A change to `src/` reaches nobody until it ships. The package is not published yet, so no install works today.
+`mcp.json` starts the server with `npx -y conductor-cloud-plugin`, so **the published npm package is what users run** — not the checkout Cursor installed. A change to `src/` reaches nobody until it ships — the rename to `continue_session` sat on `main` through 0.1.6 and reached no user until 0.1.7 went out.
 
 One version number gates both consumers, and it is written down in four files: `.cursor-plugin/plugin.json` (Cursor keys its plugin cache on it), `.cursor-plugin/marketplace.json` (what an import reads), `package.json`, and `package-lock.json`. `scripts/bump-version.sh` moves those four and nothing else — unlike `npm version` it leaves git alone (no commit, no tag), so the bump lands in the same commit as the change it describes, and it refuses to run on files that already disagree, since npm computes the next version from `package.json` alone and would leave the others behind.
 
