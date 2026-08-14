@@ -11,15 +11,22 @@ The platform contract — endpoints, auth, sandbox limits, privacy — lives in 
 
 ## Layout
 
+The repository root **is** the plugin — a single Cursor plugin, not a multi-plugin marketplace. There is no `.cursor-plugin/marketplace.json`.
+
 | Path | What lives there |
 |------|------------------|
-| `src/` | MCP server source (Node + TypeScript) |
+| `.cursor-plugin/plugin.json` | Plugin manifest — metadata, the `CONDUCTOR_API_KEY` variable, component paths |
+| `mcp.json` | MCP server registration. The filename is fixed; Cursor will not find any other name |
+| `src/` | MCP server source (Node + TypeScript), compiled to `dist/` |
 | `skills/<name>/SKILL.md` | Skill definition (+ supporting files) |
+| `assets/logo.svg` | Marketplace logo referenced by the manifest |
 | `package.json` | Scripts, deps, and the published entry point |
 | `README.md` | User-facing install and configuration |
 | `CLOUD.md` | Conductor Cloud + API reference for agents |
 
-**Nothing under `src/`, `skills/`, or `package.json` exists yet** — the repo currently holds only `LICENSE`, `README.md`, `.gitignore`, `.gitattributes`, and `.claude/settings.json`. Create these paths as you build them, and keep this table in sync when you do.
+Keep this table in sync as you add paths.
+
+**The MCP server is a scaffold: it starts, advertises an empty tool list, and calls nothing.** Adding the first real tool is the next layer.
 
 ## Core Principles
 
@@ -100,9 +107,15 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 
 ## Checks
 
-There is no build or package manager in the repo yet, so there is nothing to run today. Once `package.json` lands, this section names the single command that must pass before a PR, and CI runs the same one.
+One command must pass before a PR:
 
-Until then, verify by hand: the MCP server starts, its tools list, and a real call against the API succeeds.
+```bash
+npm run build
+```
+
+It type-checks and compiles `src/` to `dist/`. There is no test suite yet.
+
+Also verify by hand that the server still speaks MCP — the `## Verify` block in `README.md` sends `initialize` and `tools/list` over stdio and expects a tool list back.
 
 ## Enforced Rules
 

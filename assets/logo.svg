@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">Conductor Cloud</title>
+  <desc id="desc">A conductor's baton stroke over three parallel agent tracks.</desc>
+  <rect width="128" height="128" rx="20" fill="#0B1120" />
+  <path d="M28 44h72M28 64h72M28 84h72" stroke="#1E3A5F" stroke-width="8" stroke-linecap="round" />
+  <path d="M32 92C56 92 72 36 96 36" stroke="#38BDF8" stroke-width="9" stroke-linecap="round" fill="none" />
+  <circle cx="96" cy="36" r="10" fill="#38BDF8" />
+</svg>

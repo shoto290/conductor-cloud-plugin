@@ -1,0 +1,29 @@
+{
+  "name": "conductor-cloud-plugin",
+  "version": "0.1.0",
+  "description": "MCP server for the conductor-cloud plugin — hand a job to a Conductor Cloud agent.",
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shoto290/conductor-cloud-plugin.git"
+  },
+  "scripts": {
+    "build": "tsc",
+    "prepare": "npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
