@@ -1,6 +1,6 @@
 {
   "name": "conductor-cloud-plugin",
-  "version": "0.1.0",
+  "version": "0.1.3",
   "description": "MCP server for the conductor-cloud plugin — hand a job to a Conductor Cloud agent.",
   "license": "MIT",
   "type": "module",
