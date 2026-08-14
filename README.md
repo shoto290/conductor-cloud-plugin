@@ -2,13 +2,13 @@
 
 Give your coding agent control of [Conductor Cloud](https://www.conductor.build/docs/cloud). The plugin connects Cursor and Grok Bot to the Conductor API, then adds a skill so the agent knows when to spin up a cloud workspace, how to brief it, and how to supervise it until it's done.
 
-> **Status: early.** The plugin ships **one tool, `list_projects`** — enough to confirm your key works and see the repositories you can delegate into. Creating workspaces and prompting them is not built yet. The local development install is the only path that works today.
+> **Status: early.** The full delegation loop works — list your projects, create a workspace, prompt it, watch it, read the reply. Renaming, archiving, and the PR endpoints are not built yet. The local development install is the only path that works today.
 
 Conductor runs each agent in its own Linux sandbox with your repositories pre-installed. Work keeps going after you disconnect, and your team can open the same workspace and pick up the same chat.
 
 ## What you get
 
-- **MCP tools** over `https://api.conductor.build/v0` — list your projects, create a named workspace on a branch, send it a prompt, poll its status, and read the transcript back.
+- **MCP tools** over `https://api.conductor.build/v0` — `list_projects`, `create_workspace` on a named branch, `send_prompt`, `get_session_status`, `get_transcript`, `get_workspace` for the deep link, and `cancel_session` to stop a turn.
 - **A skill** that teaches the agent the parts that are easy to get wrong: a cloud session shares no context with your chat, so it needs a self-contained brief, and it reports `idle` until a queued turn actually starts.
 - **One setting.** No OAuth dance, no per-repo config.
 
@@ -105,6 +105,8 @@ Both Cursor and Grok Bot pick it up. Individual members can't enable it for Grok
 ## Verify it works
 
 Ask the agent: *"List my Conductor projects."* It should come back with the repositories you can create workspaces in. If the key is missing or rejected, the tool says so and tells you what to fix.
+
+Then try the whole loop: *"Run this in the cloud on <repo>."* The agent should create a named workspace, send it a brief, poll until the session replies, and hand you back a `conductor://` link that opens the workspace on your Mac.
 
 To check that the server builds and speaks MCP, without a key:
 

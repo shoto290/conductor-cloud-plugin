@@ -26,7 +26,7 @@ The repository root **is** the plugin — a single Cursor plugin, not a multi-pl
 
 Keep this table in sync as you add paths.
 
-**The MCP server exposes one tool: `list_projects`, a `GET /v0/projects` that returns the repositories the key can create workspaces in.** Creating a workspace, prompting it, and reading the transcript back are the next layers.
+**The MCP server exposes seven tools, covering one loop end to end: `list_projects` → `create_workspace` → `send_prompt` → `get_session_status` → `get_transcript` → `get_workspace`, plus `cancel_session` to stop a turn.** Renaming, archiving, sleeping, and the PR endpoints are the next layers.
 
 ## Core Principles
 
