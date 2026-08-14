@@ -11,11 +11,12 @@ The platform contract — endpoints, auth, sandbox limits, privacy — lives in 
 
 ## Layout
 
-The repository root **is** the plugin. There is no `plugins/` directory and no marketplace manifest: Cursor reads `.cursor-plugin/plugin.json` at the root of the folder you point it at.
+The repository root **is** the plugin. There is no `plugins/` directory: `.cursor-plugin/marketplace.json` lists one entry whose `source` is `.`, pointing back at the root, where Cursor finds `.cursor-plugin/plugin.json`.
 
 | Path | What lives there |
 |------|------------------|
 | `.cursor-plugin/plugin.json` | Plugin manifest — metadata, the `CONDUCTOR_API_KEY` variable, component paths |
+| `.cursor-plugin/marketplace.json` | One-entry marketplace so **Add Marketplace / Import from Repo** installs this folder. Its `source` is `.`, and it carries a fourth copy of the version |
 | `mcp.json` | MCP server registration — `npx -y conductor-cloud-plugin`. The filename is fixed; Cursor will not find any other name |
 | `src/` | MCP server source (Node + TypeScript), bundled to `dist/index.js` |
 | `dist/index.js` | Build output, gitignored. `prepare` rebuilds it at publish time; nothing reads the copy in a checkout |
@@ -76,7 +77,7 @@ npm run e2e -- --project <id> --agent <id> --model <id>   # needs CONDUCTOR_API_
 
 `mcp.json` starts the server with `npx -y conductor-cloud-plugin`, so **the published npm package is what users run** — not the checkout Cursor installed. A change to `src/` reaches nobody until it ships. The package is not published yet, so no install works today.
 
-One version number gates both consumers, and it is written down in three files: `.cursor-plugin/plugin.json` (Cursor keys its plugin cache on it), `package.json`, and `package-lock.json`. `scripts/bump-version.sh` moves those three and nothing else — unlike `npm version` it leaves git alone (no commit, no tag), so the bump lands in the same commit as the change it describes, and it refuses to run on files that already disagree, since npm computes the next version from `package.json` alone and would leave the others behind.
+One version number gates both consumers, and it is written down in four files: `.cursor-plugin/plugin.json` (Cursor keys its plugin cache on it), `.cursor-plugin/marketplace.json` (what an import reads), `package.json`, and `package-lock.json`. `scripts/bump-version.sh` moves those four and nothing else — unlike `npm version` it leaves git alone (no commit, no tag), so the bump lands in the same commit as the change it describes, and it refuses to run on files that already disagree, since npm computes the next version from `package.json` alone and would leave the others behind.
 
 **A change to `src/`, `skills/`, `mcp.json`, or `.cursor-plugin/` needs a bump before it can be published.** Neither consumer fails loudly on a stale version: Cursor keeps serving the plugin it already cached, and npm rejects a publish that reuses a version — the change simply reaches nobody. Prose, `.claude/`, `.github/`, and `scripts/` ship to no one and need no bump.
 

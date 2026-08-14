@@ -51,7 +51,18 @@ Clone the repo:
 git clone https://github.com/shoto290/conductor-cloud-plugin.git
 ```
 
-Then in Cursor go to **Customize → Plugins → + Add** and select the cloned folder. **Conductor Cloud** appears under **Installed**; set `CONDUCTOR_API_KEY` there and the server starts. No install or build step in the clone — it only supplies the manifest and the skill.
+Then in Cursor go to **Customize → Plugins → Add Marketplace / Import from Repo** and point it at the clone. Cursor reads `.cursor-plugin/marketplace.json`, which lists this repository as a one-plugin marketplace whose entry's `source` is `.` — the root *is* the plugin, so nothing lives under `plugins/`. Without that file Cursor reports the repository as having no marketplace and imports nothing. **Conductor Cloud** then appears under **Installed**; set `CONDUCTOR_API_KEY` there and the server starts. No install or build step in the clone — it only supplies the manifest and the skill.
+
+#### Testing a change to the clone
+
+Importing installs a *copy*, so edits to the manifest or the skill don't reach it. To load the working tree itself, symlink it into Cursor's local plugin directory instead of importing:
+
+```bash
+mkdir -p ~/.cursor/plugins/local
+ln -s "$PWD" ~/.cursor/plugins/local/conductor-cloud
+```
+
+Then run **Developer: Reload Window**. That path reads `plugin.json` straight from the folder and ignores `marketplace.json` — it is for working on the plugin, not for installing it.
 
 ### Any MCP client — manual config
 
