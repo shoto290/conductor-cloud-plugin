@@ -30,6 +30,11 @@
         "type": "string",
         "title": "Conductor API key",
         "description": "API key from https://app.conductor.build/users/api-keys. Requires a Conductor Pro, Teams, or Enterprise plan."
+      },
+      "CONDUCTOR_NODE": {
+        "type": "string",
+        "title": "Node.js path (optional)",
+        "description": "Only needed if the server reports it cannot find Node.js 18+. Run `command -v node` in a terminal and paste the path here."
       }
     },
     "required": ["CONDUCTOR_API_KEY"]
