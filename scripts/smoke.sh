@@ -4,6 +4,11 @@
 # `npm run build` cannot catch a regression here: swapping the server class or
 # registering no tools at all still type-checks cleanly, but makes tools/list
 # return "Method not found" to every client.
+#
+# It starts through scripts/start.sh, the same entry point mcp.json uses, so a
+# launcher that fails outright is caught here. It cannot prove the PATH-less
+# case the launcher exists for: with a shell's full PATH, resolution stops at
+# the first candidate and never reaches the fallbacks.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
@@ -12,7 +17,7 @@ printf '%s\n' \
   '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"smoke","version":"0.0.0"}}}' \
   '{"jsonrpc":"2.0","method":"notifications/initialized"}' \
   '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}' \
-  | node dist/index.js \
+  | /bin/sh scripts/start.sh \
   | node -e '
     let raw = "";
     process.stdin.on("data", (chunk) => (raw += chunk));

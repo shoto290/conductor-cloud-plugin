@@ -10,19 +10,20 @@ Conductor runs each agent in its own Linux sandbox with your repositories pre-in
 
 - **MCP tools** over `https://api.conductor.build/v0` — `list_projects`, `create_workspace` on a named branch, `send_prompt`, `get_session_status`, `get_transcript`, `get_workspace` for the deep link, and `cancel_session` to stop a turn.
 - **A skill** that teaches the agent the parts that are easy to get wrong: a cloud session shares no context with your chat, so it needs a self-contained brief, and it reports `idle` until a queued turn actually starts.
-- **One setting.** No OAuth dance, no per-repo config.
+- **One setting to fill in.** No OAuth dance, no per-repo config.
 
 ## Requirements
 
 - A Conductor account on **Pro, Teams, or Enterprise** — cloud workspaces are not on the free plan.
 - Your repository connected to Conductor Cloud. **GitHub only**; GitLab and Bitbucket repos need local workspaces.
-- **Node.js 18 or newer**, if you install via the manual MCP config below.
+- **Node.js 18 or newer.** Installed as a plugin, it doesn't have to be on any particular PATH — the launcher locates it at startup, version manager or not. The manual MCP config at the end has no launcher and does need `node` on the PATH your editor was started with.
 
-## The one setting
+## Settings
 
 | Name | Description |
 | --- | --- |
 | `CONDUCTOR_API_KEY` | Bearer token for the Conductor API. Required. |
+| `CONDUCTOR_NODE` | Path to a Node.js 18+ binary. Optional, and only if the launcher reports it found none. |
 
 Create a key at **[app.conductor.build/users/api-keys](https://app.conductor.build/users/api-keys)**.
 
@@ -89,7 +90,7 @@ Gets you the tools without the skill. Add to `~/.cursor/mcp.json` (global) or `.
 export CONDUCTOR_API_KEY=...
 ```
 
-An editor launched from the Dock may not inherit your shell environment. If the server starts but every call returns 401, restart Cursor from a terminal.
+This path depends on the environment Cursor was launched with: an editor started from the Dock inherits a minimal one, so `${env:CONDUCTOR_API_KEY}` can come back empty and `npx` may not resolve. The plugin install above has neither problem — it takes the key as a plugin variable and finds Node itself.
 
 ### Grok Bot
 
@@ -122,6 +123,8 @@ curl https://api.conductor.build/me \
 ```
 
 `401` means the key is wrong or expired. `403` usually means a rejected client signature — send a `User-Agent`. Errors carry a human-readable `userMessage`; read it.
+
+If the server fails to start, Cursor's MCP log carries the reason and the fix — the launcher writes both to stderr before exiting.
 
 ## Good to know
 

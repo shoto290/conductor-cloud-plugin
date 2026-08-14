@@ -20,6 +20,7 @@ The repository root **is** the plugin — a single Cursor plugin. It also carrie
 | `mcp.json` | MCP server registration. The filename is fixed; Cursor will not find any other name |
 | `src/` | MCP server source (Node + TypeScript), compiled to `dist/` |
 | `skills/<name>/SKILL.md` | Skill definition (+ supporting files) |
+| `scripts/start.sh` | Launcher `mcp.json` invokes. Finds a Node the GUI's PATH doesn't expose |
 | `scripts/smoke.sh` | Startup check run by `npm run check` |
 | `assets/logo.svg` | Marketplace logo referenced by the manifest |
 | `package.json` | Scripts, deps, and the published entry point |
