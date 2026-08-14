@@ -25,6 +25,7 @@ The repository root **is** the plugin. There is no `plugins/` directory and no m
 | `scripts/smoke.sh` | Startup check run by `npm run check`. Handshakes the working tree *and* an unpacked `npm pack` tarball |
 | `scripts/e2e.js` | The opt-in `npm run e2e` — the whole loop against the real API. Needs a key, creates a real workspace, never runs in CI |
 | `scripts/bump-version.sh` | The only supported way to move the version — see [Releasing](#releasing) |
+| `.github/workflows/ci.yml` | The whole CI: `npm ci` then `npm run check`, on every pull request and on `main` |
 | `assets/logo.svg` | Logo referenced by the manifest |
 | `package.json` | Scripts, deps, and the published entry point |
 | `README.md` | User-facing install and configuration |
@@ -55,6 +56,8 @@ npm run check
 
 It type-checks, bundles `src/` into `dist/index.js`, runs the contract tests, then runs `scripts/smoke.sh`. The steps after the build are not redundant with it: dropping the `ListTools` handler, or the `Authorization` header, still type-checks cleanly but breaks every client.
 
+`.github/workflows/ci.yml` runs `npm ci` and that same command on every pull request and on `main`, on Node 24 — one supported version, not the `>=18` floor. It is the entire CI on purpose: a check worth running in CI belongs inside `npm run check`, where it also runs locally, rather than beside it in the workflow.
+
 The contract tests (`npm test`) spawn the built server as a child process and speak real `initialize` / `tools/list` / `tools/call` to it, with `CONDUCTOR_TEST_API_BASE` pointing at a fake Conductor API on localhost. They cover the seven tool names and their required arguments, the headers each request carries, the missing-key and rejected-key failures, `userMessage` passthrough, connection failures and the timeout, the status merge, and the transcript's filtering, paging, and cursor. **No test needs a key or the network**, and one of them asserts the key never reaches stdout, stderr, or an error message — keep it that way.
 
 One check is deliberately outside that command, because it cannot be free:
@@ -73,17 +76,19 @@ npm run e2e -- --project <id> --agent <id> --model <id>   # needs CONDUCTOR_API_
 
 `mcp.json` starts the server with `npx -y conductor-cloud-plugin`, so **the published npm package is what users run** — not the checkout Cursor installed. A change to `src/` reaches nobody until it ships. The package is not published yet, so no install works today.
 
-One version number gates both consumers, and it is written down in three files: `.cursor-plugin/plugin.json` (Cursor keys its plugin cache on it), `package.json`, and `package-lock.json`. Move them together:
+One version number gates both consumers, and it is written down in three files: `.cursor-plugin/plugin.json` (Cursor keys its plugin cache on it), `package.json`, and `package-lock.json`. `scripts/bump-version.sh` moves those three and nothing else — unlike `npm version` it leaves git alone (no commit, no tag), so the bump lands in the same commit as the change it describes, and it refuses to run on files that already disagree, since npm computes the next version from `package.json` alone and would leave the others behind.
 
-```bash
-scripts/bump-version.sh <major|minor|patch>   # all three, in step
-npm publish                                   # "prepare" builds dist/ from src/
-git push
-```
+**A change to `src/`, `skills/`, `mcp.json`, or `.cursor-plugin/` needs a bump before it can be published.** Neither consumer fails loudly on a stale version: Cursor keeps serving the plugin it already cached, and npm rejects a publish that reuses a version — the change simply reaches nobody. Prose, `.claude/`, `.github/`, and `scripts/` ship to no one and need no bump.
 
-Unlike `npm version`, the script leaves git alone — no commit, no tag — so the bump lands in the same commit as the change it describes. It refuses to run on files that already disagree, since npm computes the next version from `package.json` alone and would leave the other behind.
+Publishing is by hand, and it is this checklist. There is no release bot, no Changesets, no semantic-release — don't add one.
 
-Neither consumer fails loudly on a stale version: Cursor keeps serving the plugin it already cached, and npm rejects a publish that reuses a version — the change simply reaches nobody. Prose, `.claude/`, `.github/`, and `scripts/` ship to no one and need no bump.
+1. **CI is green on the commit you are shipping.** Not on the branch, on the commit.
+2. **Bump**, unless the release is only prose: `scripts/bump-version.sh <major|minor|patch>`, committed with the change it describes.
+3. **See what would ship**: `npm pack --dry-run`. `dist/index.js` must be in the list — it is gitignored, so it exists only because `prepare` rebuilt it here.
+4. **Open the tarball**, since the list alone won't show you a stale bundle: `npm pack && tar -tzf conductor-cloud-plugin-<version>.tgz`, and check `package/package.json` carries the version you just bumped to. Delete the tarball afterwards.
+5. **Publish**: `npm publish`. `prepare` builds `dist/` from `src/` again, so what goes out is built from this checkout.
+6. **Read it back from the registry**: `npm view conductor-cloud-plugin version` returns the new number, and `npx -y conductor-cloud-plugin@<version>` starts — that last one is the path `mcp.json` actually takes.
+7. `git push`.
 
 ## Safety
 
