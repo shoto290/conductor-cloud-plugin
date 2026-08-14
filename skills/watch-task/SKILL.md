@@ -1,101 +1,62 @@
 ---
 name: watch-task
-description: After a Conductor session is launched, set up a cron-style background watch that polls until the session goes idle, then pings the user with a summary and deep link — without blocking the current turn. Use immediately after send_prompt when the user should not have to wait.
+description: After a Conductor task is launched, spin up a short-lived Grok Bot routine that polls the session and notifies the user when it finishes or needs input — without blocking the current turn.
 ---
 
 # Watch Task
 
 ## The Gesture
 
-One move: **hand supervision to a background watcher.** After you launch a session with the conductor-cloud skill, call this skill to schedule a lightweight cron agent that polls in the background. You return control to the user immediately; the watcher pings them when the session finishes or asks a question.
+After you call `continue_session` to send a job, do not sit in the current turn polling it. Start a Grok Bot routine that wakes up every few minutes, checks the session, and surfaces a message when there is something for the user to act on. End your turn immediately after creating the routine.
 
 ## When To Use
 
-- You just launched a Conductor session (`create_workspace` + `send_prompt`) and the task will take more than a minute.
-- The user should not have to wait in the current turn.
+- You just called `continue_session` to send a job to a cloud session.
+- The work will take more than a minute.
+- No watch already targets this `sessionId` — one watcher per session.
 
-Do not use this skill to create workspaces or sessions. It only watches sessions that already exist.
+## Setup
 
-## What You Need Before Starting
+Use the `schedule` skill to create a Grok Bot routine with:
 
-Collect these from the workspace you already launched:
+- **Cadence**: every 3 minutes
+- **Expiry**: 4 hours after creation — the routine must stop itself at that point regardless of session state
+- **Model**: a fast, lightweight tier (Haiku or equivalent)
+- **Prompt**: the self-contained template below with all placeholders filled
 
-| Name | Source |
-|------|--------|
-| `sessionId` | returned by `create_workspace` or `sessions create` |
-| `workspaceId` | returned by `create_workspace` |
-| `deepLink` | returned by `create_workspace` or `get_workspace` |
-| `watchCreatedAt` | current wall-clock time as ISO-8601 — the cutoff for "new" output |
+Once the routine is created, tell the user: *"I'll notify you when the session finishes or needs input."* Then end your turn.
 
-## Setting Up The Watch
+### Routine Prompt
 
-Before calling `CronCreate`, check `CronList` for an existing watcher that references the same `sessionId`. Do not stack watchers — if one already exists, tell the user and skip creation.
-
-Call `CronCreate` with:
-
-- **Schedule**: `*/3 * * * *` (every 3 minutes)
-- **Model**: a fast, lightweight tier (Haiku or the agent's default fast model) — the watcher only reads and notifies; it does not write code
-- **Prompt**: the filled-in template below
-
-After `CronCreate` returns a `cronId`, confirm to the user: `"Watching session <sessionId>. I'll notify you when it finishes or needs input."` Then end your turn.
-
-### Cron Prompt Template
-
-Fill in every `{{placeholder}}` before passing the prompt. The cron agent has no conversation history, no files, and no memory — every fact it needs must be in the prompt.
+The routine has no conversation history. Every fact it needs must be in this prompt.
 
 ```
-You are a session watcher. On each wake, follow these steps exactly, then stop.
+You are a session watcher for sessionId {{sessionId}}.
+Workspace deep link: {{deepLink}}
+Watch created at:    {{watchCreatedAt}}   (ISO-8601; timestamp of the most recent assistant turn when the watch began)
 
-Context (do not modify):
-  sessionId:      {{sessionId}}
-  workspaceId:    {{workspaceId}}
-  deepLink:       {{deepLink}}
-  watchCreatedAt: {{watchCreatedAt}}
-  watchSessionId: {{sessionId}}   # used for CronList self-lookup below
+On each wake, follow these steps in order:
 
-Steps:
+1. EXPIRY — if now is more than 4 hours past watchCreatedAt, stop all future wakes and do nothing else.
 
-1. TIMEOUT CHECK
-   If the current time is more than 4 hours past watchCreatedAt:
-   - Call CronList. Find the entry whose prompt contains "watchSessionId: {{sessionId}}".
-   - Call CronDelete on that entry's ID.
-   - Stop. Do not send any notification.
+2. STATUS — call get_session_status for {{sessionId}}.
+   If state is "working" → stop. Stay quiet.
 
-2. STATUS CHECK
-   Call get_session_status(sessionId).
-   If state is "working" → stop. Do not notify. The task is still running.
+3. TRANSCRIPT — call get_transcript for {{sessionId}} with no cursor.
+   Find the last assistant message.
+   If its timestamp is not after watchCreatedAt → stop. No new output yet.
 
-3. TRANSCRIPT CHECK (only reached when state is "idle")
-   Call get_transcript(sessionId) with no `after` cursor.
-   Find the last assistant message in the transcript.
-   If it has no timestamp or its timestamp is not after watchCreatedAt → stop quietly.
-   The task has not produced new output yet.
-
-4. NOTIFY
-   The session is idle and has new output. Determine the message type:
-
-   a. QUESTION — the last assistant message ends with "?" or contains any of:
-      "do you want", "should I", "please confirm", "let me know", "which would you prefer"
-      Send PushNotification:
-        title: "Agent needs your input"
-        body:  <last assistant message trimmed to 200 chars> + " → " + deepLink
-
-   b. DONE — everything else
-      Send PushNotification:
-        title: "Task finished"
-        body:  <one-sentence summary of what the agent did> + " → " + deepLink
-
-5. SELF-DELETE
-   Call CronList. Find the entry whose prompt contains "watchSessionId: {{sessionId}}".
-   Call CronDelete on that entry's ID.
-   Stop.
+4. NOTIFY — the session is idle with new output. Choose one:
+   • If the last assistant message ends with "?" or asks for confirmation:
+       Reply with: "The agent needs your input — <quote the message, ≤ 200 chars>  {{deepLink}}"
+   • Otherwise:
+       Reply with: "Task done — <one-sentence summary of what the agent did>  {{deepLink}}"
+   Then stop all future wakes.
 ```
 
 ## Rules
 
-- **One watcher per session.** Check `CronList` before creating. Duplicate watchers both notify the user and fight over self-deletion.
-- **Self-delete on every exit path.** Steps 1 and 5 are both deletions. A watcher that never deletes leaks.
-- **No noise while working.** Step 2 is a hard gate. Never notify while `state` is `"working"`.
-- **Idle ≠ done.** A session can be idle before the task even starts. Step 3's timestamp check is what distinguishes "waiting to begin" from "finished."
-- **Cheap model only.** This agent reads three tools and sends a notification. Do not assign a full reasoning model.
-- **No secrets in the prompt.** The cron prompt is stored on Conductor's servers. Do not put `CONDUCTOR_API_KEY` or any credential into it.
+- **One watcher per session.** Confirm no existing watch targets this `sessionId` before creating.
+- **Quiet while working.** Step 2 is a hard gate. Never surface a notification while state is `"working"`.
+- **Idle ≠ done.** A session can be idle before the task starts. The timestamp check in step 3 is what distinguishes "not started yet" from "finished."
+- **No secrets in the prompt.** Routine prompts are stored server-side. Do not include `CONDUCTOR_API_KEY` or any credential.
