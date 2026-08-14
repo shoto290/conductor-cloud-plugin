@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Verifies the built server starts and answers tools/list.
 #
-# `npm run build` cannot catch a regression here: dropping the ListTools handler
-# or swapping the server class still type-checks cleanly, but makes tools/list
+# `npm run build` cannot catch a regression here: swapping the server class or
+# registering no tools at all still type-checks cleanly, but makes tools/list
 # return "Method not found" to every client.
 set -euo pipefail
 
@@ -27,11 +27,12 @@ printf '%s\n' \
         console.error("smoke: no response to tools/list");
         process.exit(1);
       }
-      if (!Array.isArray(reply.result?.tools)) {
-        console.error("smoke: tools/list did not return a tool list");
+      const tools = reply.result?.tools;
+      if (!Array.isArray(tools) || tools.length === 0) {
+        console.error("smoke: tools/list advertised no tools");
         console.error(JSON.stringify(reply));
         process.exit(1);
       }
-      console.log(`smoke: server answered tools/list (${reply.result.tools.length} tools)`);
+      console.log(`smoke: server answered tools/list (${tools.length} tools)`);
     });
   '

@@ -26,7 +26,7 @@ The repository root **is** the plugin — a single Cursor plugin, not a multi-pl
 
 Keep this table in sync as you add paths.
 
-**The MCP server is a scaffold: it starts, advertises an empty tool list, and calls nothing.** Adding the first real tool is the next layer.
+**The MCP server exposes one tool: `list_projects`, a `GET /v0/projects` that returns the repositories the key can create workspaces in.** Creating a workspace, prompting it, and reading the transcript back are the next layers.
 
 ## Core Principles
 
