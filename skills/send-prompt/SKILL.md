@@ -1,38 +1,35 @@
 ---
 name: send-prompt
-description: Send a follow-up message to an existing Conductor Cloud session. Use when the sessionId is already known and you want to continue or redirect an in-progress agent without creating a new workspace.
+description: Send a follow-up message to an existing Conductor Cloud session using continue_session. Use when the sessionId is already known and you want to continue or redirect an in-progress agent without creating a new workspace.
 ---
 
 # Send Prompt
 
 ## The Gesture
 
-One move: **send a follow-up to a session that already exists.** You are continuing a conversation with an agent that has context, a running sandbox, and possibly in-flight work.
+One move: **call `continue_session` with a `sessionId` you already have.** Then stop — hand the `sessionId` back to the user so they can track progress with get-status or watch-task.
 
 ## When To Use
 
-- You have a `sessionId` from a previous `create_workspace` or `list_workspaces` call.
-- You want to add instructions, answer a question the agent raised, or redirect work mid-flight.
-- The workspace is still alive (not stopped or expired).
+- You have a `sessionId` from a previous workspace creation.
+- You want to send a follow-up, add instructions, answer a question the agent raised, or redirect work mid-flight.
 
-**If you do not have a `sessionId`, stop here.** Ask the user to use the `conductor-cloud` skill (or `create_workspace` directly) to start a session first, then come back.
+**If you do not have a `sessionId`, stop here.** Tell the user to run create-task first to get one, then come back.
 
 ## Flow
 
-1. **Confirm you have a `sessionId`** — if not, stop and tell the user to create a workspace first.
-2. **Send the message** — `send_prompt` with the `sessionId` and your follow-up text. A response of `state: "queued"` is normal; it means the agent received the message.
-3. **Supervise** — `get_session_status` until `state` is `idle`, then `get_transcript` (pass back the `after` cursor each time to fetch only new content). `idle` alone does not confirm the turn finished — wait for new transcript content after your cursor.
-4. **Report back** — summarize what the agent replied or did. If the workspace deep link is needed, retrieve it with `get_workspace`.
+1. **Confirm you have a `sessionId`** — if not, stop and tell the user to use create-task first.
+2. **Call `continue_session`** with the `sessionId` and the follow-up message.
+3. **Stop.** Return the `sessionId` to the user. Do not call `get_session_status`, `get_transcript`, or any other follow-up tool — that is the job of get-status or watch-task.
 
 ## Writing The Follow-Up
 
-The agent already has the repository and whatever prior turns established. You do not need to re-explain the full context — but **do** spell out anything that changed: a new constraint, a corrected file path, updated acceptance criteria.
+The agent already has the repository and whatever prior turns established. Spell out anything that changed: a new constraint, a corrected file path, updated acceptance criteria. The brief must be self-contained — do not assume the agent remembers details you mentioned only in this chat.
 
-Never include secrets, API keys, or credentials in the prompt text. Cloud chat is stored on Conductor's servers.
+Never include secrets, API keys, or credentials in the message. Cloud chat is stored on Conductor's servers.
 
 ## Rules
 
 - **Never create a workspace here.** This skill is for existing sessions only.
-- **Never put a secret in a prompt.** Use environment variables in the sandbox, not chat messages.
-- **Check workspace state before sending.** A sandbox stopped at 23h50m or sleeping after 4 hours idle will not receive the message usefully — surface this to the user instead of silently queueing into a dead session.
-- **One key, from the environment.** `CONDUCTOR_API_KEY`. Never log it or echo it.
+- **Never put a secret in a message.** Use environment variables in the sandbox, not chat messages.
+- **Stop after `continue_session`.** Supervision is out of scope for this skill.
