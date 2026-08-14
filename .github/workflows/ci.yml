@@ -1,0 +1,34 @@
+# Runs the one command a PR has to pass, so a broken branch cannot look green.
+#
+# It is deliberately the same command a contributor runs locally — `npm run
+# check` — and nothing else. `npm run e2e` stays out: it needs a real key,
+# bills a real plan, and leaves a real workspace behind.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # 24 is the current LTS and what this repo is developed on (@types/node
+      # is ^24). "engines" accepts 18 and up, so this is one supported version,
+      # not the floor.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      # `ci` over `install`: it installs the lockfile as written and fails if
+      # package.json and the lockfile disagree, which is a thing to catch here.
+      - run: npm ci
+
+      # Type-checks, bundles src/ into dist/index.js, runs the contract tests,
+      # then handshakes both the working tree and an unpacked `npm pack`
+      # tarball. See AGENTS.md → Checks.
+      - run: npm run check
