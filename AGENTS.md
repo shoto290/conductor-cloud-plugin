@@ -22,6 +22,8 @@ The repository root **is** the plugin — a single Cursor plugin. It also carrie
 | `dist/index.js` | Build output, gitignored. `prepare` rebuilds it at publish time; nothing reads the copy in a checkout |
 | `skills/<name>/SKILL.md` | Skill definition (+ supporting files) |
 | `scripts/smoke.sh` | Startup check run by `npm run check`. Handshakes the working tree *and* an unpacked `npm pack` tarball |
+| `scripts/bump-version.sh` | The only supported way to move the version — see [Releasing](#releasing) |
+| `.claude/hooks/require-version-bump.sh` | Stop hook that blocks a turn which changed what ships without bumping |
 | `assets/logo.svg` | Marketplace logo referenced by the manifest |
 | `package.json` | Scripts, deps, and the published entry point |
 | `README.md` | User-facing install and configuration |
@@ -106,6 +108,7 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 - **Don't wrap endpoints one-for-one** — an MCP tool exists to make a task easy for an agent, not to mirror a route table. Prefer a few task-shaped tools over twenty thin proxies.
 - **Surface `userMessage`** — Conductor errors carry a human-readable `userMessage`. Pass it through to the agent rather than swallowing it into a generic failure.
 - **Keep the README honest** — when you add a setting, an env var, or an install step, update `README.md` in the same commit.
+- **Bump with the change, never after it** — touching `src/`, `skills/`, `mcp.json`, or `.cursor-plugin/` means running `scripts/bump-version.sh` in the same commit. See [Releasing](#releasing).
 
 ## Checks
 
@@ -121,14 +124,21 @@ It type-checks, bundles `src/` into `dist/index.js`, then runs `scripts/smoke.sh
 
 ## Releasing
 
-`mcp.json` starts the server with `npx -y conductor-cloud-plugin`, so **the published npm package is what users run** — not the checkout Cursor installed. A change to `src/` reaches nobody until it ships:
+`mcp.json` starts the server with `npx -y conductor-cloud-plugin`, so **the published npm package is what users run** — not the checkout Cursor installed. A change to `src/` reaches nobody until it ships.
+
+One version number gates both consumers, and it is written down in four files: `.cursor-plugin/plugin.json` (Cursor keys its plugin cache on it), `.cursor-plugin/marketplace.json` (the listing), `package.json`, and `package-lock.json`. Bumping them by hand is how they drifted apart, so move them together:
 
 ```bash
-npm version patch && npm publish   # "prepare" builds dist/ from src/
-git push --follow-tags
+scripts/bump-version.sh <major|minor|patch>   # all four, in step
+npm publish                                   # "prepare" builds dist/ from src/
+git push
 ```
 
-Bump `.cursor-plugin/plugin.json`'s `version` in the same change whenever `mcp.json`, the manifest, or a skill changes — Cursor keys its plugin cache on it and will otherwise keep serving the copy it already has.
+Unlike `npm version`, the script leaves git alone — no commit, no tag — so the bump lands in the same commit as the change it describes rather than in one of its own.
+
+Bump in the **same change** as the edit, not after it. Neither consumer fails loudly on a stale version: Cursor keeps serving the plugin it already cached, and npm rejects a publish that reuses a version — the change simply reaches nobody. `.claude/hooks/require-version-bump.sh` enforces this on `Stop`, blocking any turn that touched what ships and left the version alone. It treats prose, `.claude/`, `.github/`, and `scripts/` as shipping to no one; keep that list in step with the Layout table above.
+
+`scripts/bump-version.sh` refuses to run on files that already disagree, since npm computes the next version from `package.json` alone and would leave the rest behind.
 
 There is no unit test suite yet.
 

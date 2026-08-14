@@ -1,7 +1,7 @@
 {
   "name": "conductor-cloud",
   "displayName": "Conductor Cloud",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Hand a job to a Conductor Cloud agent — create a cloud workspace, brief it, and supervise it without leaving your editor.",
   "author": {
     "name": "Shoto"
