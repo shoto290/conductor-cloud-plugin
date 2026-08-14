@@ -49,12 +49,17 @@ test("a POST sends JSON, and a POST with no body sends no content type", async (
 });
 
 test("each tool hits its own endpoint and hands the answer back whole", async (t) => {
+  // deepLink is the field the real API sends, on both of these.
   const created = {
     workspaceId: "w1",
     sessionId: "s1",
-    url: "conductor://workspaces/w1",
+    deepLink: "conductor://workspace?id=w1",
   };
-  const workspace = { id: "w1", name: "fix-login", url: "conductor://workspaces/w1" };
+  const workspace = {
+    id: "w1",
+    name: "fix-login",
+    deepLink: "conductor://workspace?id=w1",
+  };
 
   const { client, api } = await connect(t, {
     handle: (request) => {
