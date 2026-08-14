@@ -2,6 +2,8 @@
 
 Give your coding agent control of [Conductor Cloud](https://www.conductor.build/docs/cloud). The plugin connects Cursor and Grok Bot to the Conductor API, then adds a skill so the agent knows when to spin up a cloud workspace, how to brief it, and how to supervise it until it's done.
 
+> **Status: scaffold.** The plugin installs and its MCP server starts, but it exposes **no tools yet** and makes no network calls. Everything below describes the shape of the first release; the local development install is the only path that works today.
+
 Conductor runs each agent in its own Linux sandbox with your repositories pre-installed. Work keeps going after you disconnect, and your team can open the same workspace and pick up the same chat.
 
 ## What you get
@@ -23,6 +25,8 @@ Conductor runs each agent in its own Linux sandbox with your repositories pre-in
 | `CONDUCTOR_API_KEY` | Bearer token for the Conductor API. Required. |
 
 Create a key at **[app.conductor.build/users/api-keys](https://app.conductor.build/users/api-keys)**.
+
+It is declared as a plugin variable in `.cursor-plugin/plugin.json` and handed to the MCP server as an environment variable by `mcp.json`, so it is never a tool argument and never lands in your repo.
 
 The key is a live credential for your repositories and compute. Never commit it, never paste it into an agent chat, and give unattended bots their own key — commits are attributed to whoever the key belongs to.
 
@@ -46,6 +50,21 @@ Use this if you'd rather install from source than wait for the listing. Requires
 2. Paste `https://github.com/shoto290/conductor-cloud-plugin`.
 3. Enable the **conductor-cloud** plugin and set `CONDUCTOR_API_KEY` as a plugin variable.
 4. If your team runs an MCP allowlist, add this plugin's server to it.
+
+### Cursor — local development
+
+The path that works today. The repository root *is* the plugin, so symlink it into Cursor's local plugin directory:
+
+```bash
+git clone https://github.com/shoto290/conductor-cloud-plugin.git
+cd conductor-cloud-plugin
+npm install   # also builds dist/ via the prepare script
+
+mkdir -p ~/.cursor/plugins/local
+ln -s "$PWD" ~/.cursor/plugins/local/conductor-cloud
+```
+
+Then run **Developer: Reload Window** in Cursor. `npm install` is required — the server runs from `dist/`, which is not committed.
 
 ### Any MCP client — manual config
 
@@ -85,9 +104,13 @@ Both Cursor and Grok Bot pick it up. Individual members can't enable it for Grok
 
 ## Verify it works
 
-Ask the agent: *"List my Conductor projects."* It should come back with the repositories you can create workspaces in.
+While the plugin is a scaffold, check that the server builds and speaks MCP:
 
-To check the key on its own, without the agent:
+```bash
+npm run check
+```
+
+Once the tools land, ask the agent: *"List my Conductor projects."* It should come back with the repositories you can create workspaces in. To check the key on its own, without the agent:
 
 ```bash
 curl https://api.conductor.build/me \
@@ -102,8 +125,6 @@ curl https://api.conductor.build/me \
 - **Chat from cloud workspaces is stored on Conductor's servers** and visible to your organization. This is the one place Cloud differs from local Conductor on privacy. Never put a secret in a prompt.
 - **Sandboxes stop.** After 4 hours idle, and at 23h50m no matter what. Files and chat survive; running processes and in-flight turns don't.
 - **The API is v0 and in beta.** Shapes may change; `https://api.conductor.build/v0/openapi.json` is the current contract.
-
-More detail in [CLOUD.md](CLOUD.md).
 
 ## Prior art
 

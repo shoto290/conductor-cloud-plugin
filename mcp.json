@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "conductor-cloud": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["dist/index.js"],
+      "cwd": "${PLUGIN_ROOT}",
+      "env": {
+        "CONDUCTOR_API_KEY": "${CONDUCTOR_API_KEY}"
+      }
+    }
+  }
+}

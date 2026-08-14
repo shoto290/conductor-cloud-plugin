@@ -1,0 +1,39 @@
+{
+  "name": "conductor-cloud",
+  "displayName": "Conductor Cloud",
+  "version": "0.1.0",
+  "description": "Hand a job to a Conductor Cloud agent — create a cloud workspace, brief it, and supervise it without leaving your editor.",
+  "author": {
+    "name": "Shoto"
+  },
+  "homepage": "https://github.com/shoto290/conductor-cloud-plugin",
+  "repository": "https://github.com/shoto290/conductor-cloud-plugin",
+  "license": "MIT",
+  "logo": "assets/logo.svg",
+  "keywords": [
+    "conductor",
+    "cloud",
+    "agents",
+    "delegation",
+    "mcp"
+  ],
+  "category": "integrations",
+  "tags": [
+    "conductor",
+    "agents",
+    "mcp"
+  ],
+  "variables": {
+    "type": "object",
+    "properties": {
+      "CONDUCTOR_API_KEY": {
+        "type": "string",
+        "title": "Conductor API key",
+        "description": "API key from https://app.conductor.build/users/api-keys. Requires a Conductor Pro, Teams, or Enterprise plan."
+      }
+    },
+    "required": ["CONDUCTOR_API_KEY"]
+  },
+  "skills": "./skills/",
+  "mcpServers": "./mcp.json"
+}
