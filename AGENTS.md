@@ -11,11 +11,12 @@ The platform contract — endpoints, auth, sandbox limits, privacy — lives in 
 
 ## Layout
 
-The repository root **is** the plugin — a single Cursor plugin, not a multi-plugin marketplace. There is no `.cursor-plugin/marketplace.json`.
+The repository root **is** the plugin — a single Cursor plugin. It also carries a one-entry `marketplace.json` so **+ Add** can install a clone of this folder; that entry points back at the root, so nothing lives under `plugins/`.
 
 | Path | What lives there |
 |------|------------------|
 | `.cursor-plugin/plugin.json` | Plugin manifest — metadata, the `CONDUCTOR_API_KEY` variable, component paths |
+| `.cursor-plugin/marketplace.json` | One-entry marketplace so **+ Add** installs this folder. Its `source` is `.` |
 | `mcp.json` | MCP server registration. The filename is fixed; Cursor will not find any other name |
 | `src/` | MCP server source (Node + TypeScript), compiled to `dist/` |
 | `skills/<name>/SKILL.md` | Skill definition (+ supporting files) |
