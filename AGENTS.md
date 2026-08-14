@@ -5,7 +5,7 @@ All AI agents working in this repo must follow these instructions.
 This repo is **conductor-cloud-plugin**: one Cursor plugin that gives a coding agent (Cursor / Grok Bot) control over [Conductor Cloud](https://www.conductor.build/docs/cloud). It ships two artifacts:
 
 - an **MCP server** that exposes the Conductor API (`https://api.conductor.build/v0`) as tools, published to npm and started by `npx`, and
-- a **skill** that teaches the agent when to reach for those tools and how to supervise the sessions it starts.
+- **skills** that teach the agent when to reach for each tool and how to supervise the sessions it starts.
 
 The platform contract — endpoints, auth, sandbox limits, privacy — lives in the [Conductor API docs](https://www.conductor.build/docs/api) and [Cloud docs](https://www.conductor.build/docs/cloud), with `https://api.conductor.build/v0/openapi.json` as the authoritative spec. Read them before writing anything that calls Conductor.
 
@@ -107,6 +107,6 @@ Confirm before anything destructive — `git push --force`, `git reset --hard`, 
 | Type | Convention | Example |
 |------|------------|---------|
 | Files & directories | kebab-case | `session-poller.ts` |
-| Skill `name:` | kebab-case, matches its directory | `name: conductor-cloud` |
+| Skill `name:` | kebab-case, matches its directory | `name: list-projects` |
 | MCP tool names | snake_case, verb first | `create_workspace` |
 | Headings | Title Case | `## Typical Flow` |
