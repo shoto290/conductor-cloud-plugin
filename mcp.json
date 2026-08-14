@@ -1,13 +1,10 @@
 {
   "mcpServers": {
     "conductor-cloud": {
-      "type": "stdio",
-      "command": "/bin/sh",
-      "args": ["scripts/start.sh"],
-      "cwd": "${PLUGIN_ROOT}",
+      "command": "npx",
+      "args": ["-y", "conductor-cloud-plugin"],
       "env": {
-        "CONDUCTOR_API_KEY": "${CONDUCTOR_API_KEY}",
-        "CONDUCTOR_NODE": "${CONDUCTOR_NODE}"
+        "CONDUCTOR_API_KEY": "${CONDUCTOR_API_KEY}"
       }
     }
   }

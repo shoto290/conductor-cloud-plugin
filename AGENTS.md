@@ -17,12 +17,11 @@ The repository root **is** the plugin — a single Cursor plugin. It also carrie
 |------|------------------|
 | `.cursor-plugin/plugin.json` | Plugin manifest — metadata, the `CONDUCTOR_API_KEY` variable, component paths |
 | `.cursor-plugin/marketplace.json` | One-entry marketplace so **+ Add** installs this folder. Its `source` is `.` |
-| `mcp.json` | MCP server registration. The filename is fixed; Cursor will not find any other name |
+| `mcp.json` | MCP server registration — `npx -y conductor-cloud-plugin`. The filename is fixed; Cursor will not find any other name |
 | `src/` | MCP server source (Node + TypeScript), bundled to `dist/index.js` |
-| `dist/index.js` | Committed build output. Cursor installs by cloning and never builds, so this is tracked — rebuild and commit it whenever `src/` changes |
+| `dist/index.js` | Build output, gitignored. `prepare` rebuilds it at publish time; nothing reads the copy in a checkout |
 | `skills/<name>/SKILL.md` | Skill definition (+ supporting files) |
-| `scripts/start.sh` | Launcher `mcp.json` invokes. Finds a Node the GUI's PATH doesn't expose |
-| `scripts/smoke.sh` | Startup check run by `npm run check` |
+| `scripts/smoke.sh` | Startup check run by `npm run check`. Handshakes the working tree *and* an unpacked `npm pack` tarball |
 | `assets/logo.svg` | Marketplace logo referenced by the manifest |
 | `package.json` | Scripts, deps, and the published entry point |
 | `README.md` | User-facing install and configuration |
@@ -118,7 +117,18 @@ npm run check
 
 It type-checks, bundles `src/` into `dist/index.js`, then runs `scripts/smoke.sh`, which starts the built server and asserts it answers `tools/list`. The smoke step is not redundant with the build: dropping the `ListTools` handler still type-checks cleanly but breaks every client.
 
-`smoke.sh` runs that handshake twice — once against the working tree, once against a copy with `node_modules` stripped, which is how Cursor actually installs this plugin. The second run is what fails if `dist/index.js` stops being self-contained. The build is deterministic, so `npm run check` leaves the tree clean unless `src/` actually changed. When it does change, `dist/index.js` shows up dirty — commit it alongside the source rather than reverting it.
+`smoke.sh` runs that handshake twice — once against the working tree, once against an unpacked `npm pack` tarball with no `node_modules`, which is what `npx -y conductor-cloud-plugin` downloads and runs. The second run is what fails if `files`, `bin`, or the bundle's self-containment regresses; the first passes regardless, because `node_modules` is sitting right there.
+
+## Releasing
+
+`mcp.json` starts the server with `npx -y conductor-cloud-plugin`, so **the published npm package is what users run** — not the checkout Cursor installed. A change to `src/` reaches nobody until it ships:
+
+```bash
+npm version patch && npm publish   # "prepare" builds dist/ from src/
+git push --follow-tags
+```
+
+Bump `.cursor-plugin/plugin.json`'s `version` in the same change whenever `mcp.json`, the manifest, or a skill changes — Cursor keys its plugin cache on it and will otherwise keep serving the copy it already has.
 
 There is no unit test suite yet.
 

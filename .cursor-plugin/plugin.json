@@ -1,7 +1,7 @@
 {
   "name": "conductor-cloud",
   "displayName": "Conductor Cloud",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Hand a job to a Conductor Cloud agent — create a cloud workspace, brief it, and supervise it without leaving your editor.",
   "author": {
     "name": "Shoto"
@@ -30,11 +30,6 @@
         "type": "string",
         "title": "Conductor API key",
         "description": "API key from https://app.conductor.build/users/api-keys. Requires a Conductor Pro, Teams, or Enterprise plan."
-      },
-      "CONDUCTOR_NODE": {
-        "type": "string",
-        "title": "Node.js path (optional)",
-        "description": "Only needed if the server reports it cannot find Node.js 18+. Run `command -v node` in a terminal and paste the path here."
       }
     },
     "required": ["CONDUCTOR_API_KEY"]
