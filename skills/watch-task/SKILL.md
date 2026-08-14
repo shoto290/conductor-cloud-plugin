@@ -17,12 +17,14 @@ After you call `continue_session` to send a job, do not sit in the current turn 
 
 ## Setup
 
-Use the `schedule` skill to create a Grok Bot routine with:
+Create a short-lived Grok Bot routine (standing order) with:
 
 - **Cadence**: every 3 minutes
-- **Expiry**: 4 hours after creation — the routine must stop itself at that point regardless of session state
+- **Expiry**: 4 hours — the routine must stop itself at that point regardless of session state
 - **Model**: a fast, lightweight tier (Haiku or equivalent)
 - **Prompt**: the self-contained template below with all placeholders filled
+
+Before creating, call `get_transcript` for the session with no cursor and record the cursor it returns as `{{startCursor}}`. This marks the point before the task began; new content is anything after it.
 
 Once the routine is created, tell the user: *"I'll notify you when the session finishes or needs input."* Then end your turn.
 
@@ -33,21 +35,21 @@ The routine has no conversation history. Every fact it needs must be in this pro
 ```
 You are a session watcher for sessionId {{sessionId}}.
 Workspace deep link: {{deepLink}}
-Watch created at:    {{watchCreatedAt}}   (ISO-8601; timestamp of the most recent assistant turn when the watch began)
+Start cursor:        {{startCursor}}   (transcript cursor captured before the task started)
+Wake count:          {{wakeCount}}     (increment on each wake; stop after 80 wakes ≈ 4 hours)
 
 On each wake, follow these steps in order:
 
-1. EXPIRY — if now is more than 4 hours past watchCreatedAt, stop all future wakes and do nothing else.
+1. EXPIRY — if wakeCount has reached 80, stop all future wakes and do nothing else.
 
 2. STATUS — call get_session_status for {{sessionId}}.
    If state is "working" → stop. Stay quiet.
 
-3. TRANSCRIPT — call get_transcript for {{sessionId}} with no cursor.
-   Find the last assistant message.
-   If its timestamp is not after watchCreatedAt → stop. No new output yet.
+3. TRANSCRIPT — call get_transcript for {{sessionId}} with after={{startCursor}}.
+   If no new content is returned → stop. The session is idle but nothing new has been written yet.
 
-4. NOTIFY — the session is idle with new output. Choose one:
-   • If the last assistant message ends with "?" or asks for confirmation:
+4. NOTIFY — the session is idle and has new content after the start cursor. Choose one:
+   • If the last new assistant message ends with "?" or asks for confirmation:
        Reply with: "The agent needs your input — <quote the message, ≤ 200 chars>  {{deepLink}}"
    • Otherwise:
        Reply with: "Task done — <one-sentence summary of what the agent did>  {{deepLink}}"
@@ -58,5 +60,5 @@ On each wake, follow these steps in order:
 
 - **One watcher per session.** Confirm no existing watch targets this `sessionId` before creating.
 - **Quiet while working.** Step 2 is a hard gate. Never surface a notification while state is `"working"`.
-- **Idle ≠ done.** A session can be idle before the task starts. The timestamp check in step 3 is what distinguishes "not started yet" from "finished."
+- **Idle ≠ done.** A session can be idle before the task produces output. Step 3's cursor check is what distinguishes "not started yet" from "finished."
 - **No secrets in the prompt.** Routine prompts are stored server-side. Do not include `CONDUCTOR_API_KEY` or any credential.
